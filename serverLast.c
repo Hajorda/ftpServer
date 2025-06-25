@@ -54,9 +54,9 @@ void receiveFile(int client_sock)
         {
             strncpy(filename, header.filename, FILENAME_MAX_LEN - 1);
             filename[FILENAME_MAX_LEN - 1] = '\0';
-            // char full_path[FILENAME_MAX_LEN + sizeof(SAVE_DIR) + 2];
-            // snprintf(full_path, sizeof(full_path), "%s/%s", SAVE_DIR, filename);
-            fp = fopen(filename, "wb");
+            char full_path[FILENAME_MAX_LEN + sizeof(SAVE_DIR) + 2];
+            snprintf(full_path, sizeof(full_path), "%s/%s", SAVE_DIR, filename);
+            fp = fopen(full_path, "wb");
             if (!fp)
             {
                 perror("File open failed");
@@ -95,6 +95,38 @@ void receiveFile(int client_sock)
     }
 }
 
+//!!! todo look! List the saved files in the directory
+void listSavedFiles()
+{
+    struct stat st;
+    if (stat(SAVE_DIR, &st) == 0 && S_ISDIR(st.st_mode))
+    {
+        printf("Saved files in directory '%s':\n", SAVE_DIR);
+        FILE *fp = popen("ls -1 " SAVE_DIR, "r");
+        if (fp == NULL)
+        {
+            perror("Failed to list saved files");
+            return;
+        }
+        char filename[FILENAME_MAX_LEN];
+        while (fgets(filename, sizeof(filename), fp) != NULL)
+        {
+            // Remove newline character from filename
+            size_t len = strlen(filename);
+            if (len > 0 && filename[len - 1] == '\n')
+            {
+                filename[len - 1] = '\0';
+            }
+            printf(" - %s\n", filename);
+        }
+        pclose(fp);
+    }
+    else
+    {
+        printf("No saved files found in directory '%s'.\n", SAVE_DIR);
+    }
+}
+
 int main()
 {
     int server_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -122,7 +154,7 @@ int main()
         close(server_sock);
         exit(EXIT_FAILURE);
     }
-
+    listSavedFiles();
     printf("Server listening on port 8080...\n");
 
     struct sockaddr_in client_addr;
