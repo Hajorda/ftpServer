@@ -1,47 +1,36 @@
+#include "client.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <unistd.h>
-
-// Lib's for socket
-#include <sys/types.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-// DEFINE
 #define CHUNK_SIZE 512
 #define FILENAME_MAX_LEN 64
-#define MAX_RETRIES 5
-#define ACK_BUF_SIZE 4
 
 typedef struct
 {
-    __uint32_t chunk_id;
-    __uint32_t chunk_size;
-    __uint32_t total_chunks;
+    uint32_t chunk_id;
+    uint32_t chunk_size;
+    uint32_t total_chunks;
+    // TODO Handle type.
+    uint32_t type;
     char filename[FILENAME_MAX_LEN];
-} FileChunkHeader; // ! __attribute__((packed)) FileChunkHeader; It's not portable.
+} FileChunkHeader;
 
-// PRogress bar
-const int progressBarLength = 30;
-
-void progressBar(int doneTime)
+void progress_bar(int percent)
 {
-    int numChar = doneTime * progressBarLength / 100;
-
+    const int length = 30;
+    int filled = (percent * length) / 100;
     printf("\r[");
-    for (int i = 0; i < numChar; i++)
-    {
+    for (int i = 0; i < filled; i++)
         printf("#");
-    }
-    for (int j = 0; j < progressBarLength - numChar; j++)
-    {
+    for (int i = filled; i < length; i++)
         printf(" ");
-    }
-    printf("] %d%% done.", doneTime);
-    // TODO WHat is this?
+    printf("] %d%%", percent);
     fflush(stdout);
 }
 
@@ -67,7 +56,7 @@ int sendChunk(int socked, FileChunkHeader *header, const uint8_t *buffer, int pa
 };
 
 // Send file
-void sendFile(const char *filename, int sockfd)
+void send_file(const char *filename, int sockfd)
 {
     FILE *fp = fopen(filename, "rb");
 
@@ -119,47 +108,81 @@ void sendFile(const char *filename, int sockfd)
             return;
         }
         int percent = (i + 1) * 100 / total_chunks;
-        progressBar(percent);
-        // ! REMOVE REMOVE REMOVE
-        usleep(20000);
+        progress_bar(percent);
     }
     printf("\n");
 
     printf("File succesfully sent.");
 }
 
-int main()
+// Recive Fİle
+void receive_file(int sockfd)
 {
-    int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (clientSocket < 0)
-    {
-        perror("ERROR: Socket creation failed.");
-        exit(EXIT_FAILURE);
-    };
+    FILE *fp = NULL;
+    char filename[FILENAME_MAX_LEN];
+    int total_chunks = 0, received = 0;
 
-    //! TODO Look
-    struct sockaddr_in server_addr = {0};
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(8080);
-
-    if (inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr) <= 0)
+    while (1)
     {
-        perror("Invalid address");
-        close(clientSocket);
-        exit(EXIT_FAILURE);
+        FileChunkHeader header;
+        int n = recv(sockfd, &header, sizeof(header), MSG_WAITALL);
+        if (n <= 0)
+        {
+            if (fp)
+                fclose(fp);
+            perror("Failed to receive file header");
+            return;
+        }
+
+        int chunk_id = ntohl(header.chunk_id);
+        int chunk_size = ntohl(header.chunk_size);
+        total_chunks = ntohl(header.total_chunks);
+
+        if (chunk_id == 0)
+        {
+            strncpy(filename, header.filename, FILENAME_MAX_LEN);
+            fp = fopen(filename, "wb");
+            if (!fp)
+                break;
+        }
+
+        uint8_t buffer[CHUNK_SIZE];
+        int r = recv(sockfd, buffer, chunk_size, MSG_WAITALL);
+        if (r <= 0)
+            break;
+
+        fwrite(buffer, 1, r, fp);
+        received++;
+
+        int percent = received * 100 / total_chunks;
+        progress_bar(percent);
+
+        if (received >= total_chunks)
+            break;
     }
 
-    if (connect(clientSocket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+    if (fp)
     {
-        perror("Connection to server failed");
-        close(clientSocket);
-        exit(EXIT_FAILURE);
+        fclose(fp);
+        printf("\nFile received: %s\n", filename);
     }
+    else
+    {
+        printf("Failed to receive file.\n");
+    }
+}
 
-    // Send file using Client Socket
-
-    sendFile("cat.jpeg", clientSocket);
-    printf("FINISH");
-    close(clientSocket);
-    return 0;
+void receive_output(int sockfd)
+{
+    char buffer[512];
+    int n;
+    printf("\n--- Server Response ---\n");
+    while ((n = recv(sockfd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT)) > 0)
+    {
+        buffer[n] = '\0';
+        printf("%s", buffer);
+        if (n < (int)(sizeof(buffer) - 1))
+            break;
+    }
+    printf("\n-----------------------\n");
 }
