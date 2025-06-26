@@ -28,7 +28,6 @@ void progress_bar(int percent)
     printf("\r[");
     for (int i = 0; i < filled; i++)
         printf("█");
-    printf("");
     for (int i = filled; i < length; i++)
         printf("▒");
     printf("] %d%%", percent);
@@ -142,6 +141,9 @@ void receive_file(int sockfd)
     char filename[FILENAME_MAX_LEN];
     int total_chunks = 0, received = 0;
 
+    // Initialize filename buffer
+    memset(filename, 0, FILENAME_MAX_LEN);
+
     while (1)
     {
         FileChunkHeader header;
@@ -158,20 +160,57 @@ void receive_file(int sockfd)
         int chunk_size = ntohl(header.chunk_size);
         total_chunks = ntohl(header.total_chunks);
 
+        // Validate chunk_size to prevent buffer overflow
+        if (chunk_size > CHUNK_SIZE || chunk_size <= 0)
+        {
+            if (fp)
+                fclose(fp);
+            fprintf(stderr, "Invalid chunk size: %d\n", chunk_size);
+            return;
+        }
+
+        // Validate total_chunks
+        if (total_chunks <= 0 || total_chunks > 1000000)
+        {
+            if (fp)
+                fclose(fp);
+            fprintf(stderr, "Invalid total chunks: %d\n", total_chunks);
+            return;
+        }
+
         if (chunk_id == 0)
         {
-            strncpy(filename, header.filename, FILENAME_MAX_LEN);
+            // Ensure header.filename is null-terminated
+            header.filename[FILENAME_MAX_LEN - 1] = '\0';
+            strncpy(filename, header.filename, FILENAME_MAX_LEN - 1);
+            filename[FILENAME_MAX_LEN - 1] = '\0';
             fp = fopen(filename, "wb");
             if (!fp)
-                break;
+            {
+                perror("Failed to open file for writing");
+                return;
+            }
         }
 
         uint8_t buffer[CHUNK_SIZE];
         int r = recv(sockfd, buffer, chunk_size, MSG_WAITALL);
         if (r <= 0)
-            break;
+        {
+            if (fp)
+                fclose(fp);
+            perror("Failed to receive chunk data");
+            return;
+        }
 
-        fwrite(buffer, 1, r, fp);
+        if (fp)
+        {
+            fwrite(buffer, 1, r, fp);
+        }
+        else
+        {
+            fprintf(stderr, "File not opened, cannot write chunk %d\n", chunk_id);
+            return;
+        }
         received++;
 
         int percent = received * 100 / total_chunks;

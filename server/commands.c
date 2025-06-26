@@ -19,6 +19,7 @@ typedef struct
     uint32_t chunk_id;
     uint32_t chunk_size;
     uint32_t total_chunks;
+    uint32_t type;
     char filename[FILENAME_MAX_LEN];
 } FileChunkHeader;
 
@@ -124,21 +125,23 @@ void send_file(int sock, const char *filename)
 
     for (int i = 0; i < total_chunks; i++)
     {
-        FileChunkHeader header = {
-            .chunk_id = htonl(i),
-            .chunk_size = htonl(CHUNK_SIZE),
-            .total_chunks = htonl(total_chunks)};
-        strncpy(header.filename, filename, FILENAME_MAX_LEN - 1);
-        send(sock, &header, sizeof(header), 0);
-
         uint8_t buffer[CHUNK_SIZE] = {0};
         int read_bytes = fread(buffer, 1, CHUNK_SIZE, fp);
+
+        FileChunkHeader header = {
+            .chunk_id = htonl(i),
+            .chunk_size = htonl(read_bytes),
+            .total_chunks = htonl(total_chunks),
+            .type = htonl(0)};
+        strncpy(header.filename, filename, FILENAME_MAX_LEN - 1);
+        header.filename[FILENAME_MAX_LEN - 1] = '\0';
+        send(sock, &header, sizeof(header), 0);
+
         send(sock, buffer, read_bytes, 0);
     }
 
     fclose(fp);
     printf(GREEN "File sent successfully: %s\n" RESET, filename);
-    send(sock, "SUCCESS: File downloaded\n", 25, 0);
 }
 
 void send_list(int sock)
