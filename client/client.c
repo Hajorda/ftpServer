@@ -21,7 +21,7 @@ int main()
     {
         printf("ftp> ");
         fflush(stdout);
-        // Todo look
+        // Todo look and support arguments in the future
         if (!fgets(command, sizeof(command), stdin))
             break;
         command[strcspn(command, "\n")] = '\0'; // Remove newline
@@ -35,8 +35,12 @@ int main()
                 continue;
             }
             printf(GREEN "Getting the file: %s\n" RESET, filename);
-            // send(sock, command, strlen(command), 0);
-            // receive_file(sock);
+            send(sock, command, strlen(command), 0);
+            send(sock, "\n", 1, 0);
+            if (!check_for_error(sock))
+            {
+                receive_file(sock);
+            }
         }
         else if (strcmp(command, "get") == 0)
         {
@@ -53,8 +57,9 @@ int main()
                 continue;
             }
             printf(GREEN "Sending the file: %s\n" RESET, filename);
-            // send(sock, command, strlen(command), 0);
-            // send_file(filename, sock);
+            send(sock, "upload", 6, 0);
+            send(sock, "\n", 1, 0);
+            send_file(filename, sock);
         }
         else if (strcmp(command, "send") == 0)
         {
@@ -65,15 +70,17 @@ int main()
         else if (strcmp(command, "list") == 0)
         {
             printf(BLUE "Listing files on the server...\n" RESET);
-            // send(sock, command, strlen(command), 0);
-            // receive_output(sock);
+            send(sock, "ls", 2, 0);
+            send(sock, "\n", 1, 0);
+            receive_output(sock);
         }
         // Print working directory
         else if (strcmp(command, "pwd") == 0)
         {
             printf(BLUE "Getting current working directory...\n" RESET);
-            // send(sock, command, strlen(command), 0);
-            // receive_output(sock);
+            send(sock, command, strlen(command), 0);
+            send(sock, "\n", 1, 0);
+            receive_output(sock);
         }
         // Change directory
         else if (strncmp(command, "cd ", 3) == 0)
@@ -85,8 +92,9 @@ int main()
                 continue;
             }
             printf(GREEN "Changing directory to: %s\n" RESET, path);
-            // send(sock, command, strlen(command), 0);
-            // receive_output(sock);
+            send(sock, command, strlen(command), 0);
+            send(sock, "\n", 1, 0);
+            receive_output(sock);
         }
         else if (strcmp(command, "cd") == 0)
         {
@@ -103,8 +111,9 @@ int main()
                 continue;
             }
             printf(GREEN "Deleting file: %s\n" RESET, filename);
-            // send(sock, command, strlen(command), 0);
-            // receive_output(sock);
+            send(sock, command, strlen(command), 0);
+            send(sock, "\n", 1, 0);
+            receive_output(sock);
         }
         else if (strcmp(command, "del") == 0)
         {

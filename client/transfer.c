@@ -27,9 +27,10 @@ void progress_bar(int percent)
     int filled = (percent * length) / 100;
     printf("\r[");
     for (int i = 0; i < filled; i++)
-        printf("#");
+        printf("█");
+    printf("");
     for (int i = filled; i < length; i++)
-        printf(" ");
+        printf("▒");
     printf("] %d%%", percent);
     fflush(stdout);
 }
@@ -115,6 +116,25 @@ void send_file(const char *filename, int sockfd)
     printf("File succesfully sent.");
 }
 
+// Function to check if the server sent an error message
+int check_for_error(int sockfd)
+{
+    char buffer[256];
+    // Peek at the first few bytes without removing them from the socket buffer
+    int n = recv(sockfd, buffer, sizeof(buffer) - 1, MSG_PEEK);
+    if (n > 0)
+    {
+        buffer[n] = '\0';
+        if (strstr(buffer, "ERROR:") || strstr(buffer, "SUCCESS:"))
+        {
+            // It's a text message, not file data
+            receive_output(sockfd);
+            return 1; // Error or success message found
+        }
+    }
+    return 0; // No error message, proceed with file transfer
+}
+
 // Recive Fİle
 void receive_file(int sockfd)
 {
@@ -177,12 +197,26 @@ void receive_output(int sockfd)
     char buffer[512];
     int n;
     printf("\n--- Server Response ---\n");
-    while ((n = recv(sockfd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT)) > 0)
+
+    while ((n = recv(sockfd, buffer, sizeof(buffer) - 1, 0)) > 0)
     {
         buffer[n] = '\0';
         printf("%s", buffer);
-        if (n < (int)(sizeof(buffer) - 1))
+
+        // Check for specific termination markers
+        if (strstr(buffer, "END_OF_LIST") ||
+            strstr(buffer, "ERROR:") ||
+            strstr(buffer, "SUCCESS:") ||
+            strstr(buffer, "OK:"))
+        {
             break;
+        }
+
+        // For directory listing, check if we received a path ending with newline
+        if (buffer[n - 1] == '\n' && strchr(buffer, '/') != NULL)
+        {
+            break;
+        }
     }
     printf("\n-----------------------\n");
 }

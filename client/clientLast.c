@@ -21,7 +21,6 @@ typedef struct
     __uint32_t chunk_id;
     __uint32_t chunk_size;
     __uint32_t total_chunks;
-    __uint32_t type;
     char filename[FILENAME_MAX_LEN];
 } FileChunkHeader; // ! __attribute__((packed)) FileChunkHeader; It's not portable.
 
