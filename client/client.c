@@ -1,4 +1,5 @@
 #include "client.h"
+#include "colors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,38 +28,125 @@ int main()
         // get
         if (strncmp(command, "get ", 4) == 0)
         {
-            send(sock, command, strlen(command), 0);
-            receive_file(sock);
+            const char *filename = command + 4; // Extract filename
+            if (strlen(filename) == 0)
+            {
+                printf(RED "Error: 'get' command requires a filename.\n" RESET);
+                continue;
+            }
+            printf(GREEN "Getting the file: %s\n" RESET, filename);
+            // send(sock, command, strlen(command), 0);
+            // receive_file(sock);
+        }
+        else if (strcmp(command, "get") == 0)
+        {
+            printf(RED "Error: 'get' command requires a filename.\n" RESET);
+            continue;
         }
         // Upload
-        else if (strncmp(command, "upload ", 7) == 0)
+        else if (strncmp(command, "send ", 5) == 0)
         {
-            send(sock, command, strlen(command), 0);
-            const char *filename = command + 7;
-            send_file(filename, sock);
+            const char *filename = command + 5; // Extract filename
+            if (strlen(filename) == 0)
+            {
+                printf(RED "Error: 'send' command requires a filename.\n" RESET);
+                continue;
+            }
+            printf(GREEN "Sending the file: %s\n" RESET, filename);
+            // send(sock, command, strlen(command), 0);
+            // send_file(filename, sock);
+        }
+        else if (strcmp(command, "send") == 0)
+        {
+            printf(RED "Error: 'send' command requires a filename.\n" RESET);
+            continue;
+        }
+        // List files
+        else if (strcmp(command, "list") == 0)
+        {
+            printf(BLUE "Listing files on the server...\n" RESET);
+            // send(sock, command, strlen(command), 0);
+            // receive_output(sock);
+        }
+        // Print working directory
+        else if (strcmp(command, "pwd") == 0)
+        {
+            printf(BLUE "Getting current working directory...\n" RESET);
+            // send(sock, command, strlen(command), 0);
+            // receive_output(sock);
+        }
+        // Change directory
+        else if (strncmp(command, "cd ", 3) == 0)
+        {
+            const char *path = command + 3; // Extract path
+            if (strlen(path) == 0)
+            {
+                printf(RED "Error: 'cd' command requires a directory path.\n" RESET);
+                continue;
+            }
+            printf(GREEN "Changing directory to: %s\n" RESET, path);
+            // send(sock, command, strlen(command), 0);
+            // receive_output(sock);
+        }
+        else if (strcmp(command, "cd") == 0)
+        {
+            printf(RED "Error: 'cd' command requires a directory path.\n" RESET);
+            continue;
+        }
+        // Delete file
+        else if (strncmp(command, "del ", 4) == 0)
+        {
+            const char *filename = command + 4; // Extract filename
+            if (strlen(filename) == 0)
+            {
+                printf(RED "Error: 'del' command requires a filename.\n" RESET);
+                continue;
+            }
+            printf(GREEN "Deleting file: %s\n" RESET, filename);
+            // send(sock, command, strlen(command), 0);
+            // receive_output(sock);
+        }
+        else if (strcmp(command, "del") == 0)
+        {
+            printf(RED "Error: 'del' command requires a filename.\n" RESET);
+            continue;
         }
         // help
-        else if (strcmp(command, "help") == 0)
+        else if (strncmp(command, "help", 4) == 0)
         {
-            printf("Available commands:\n");
-            printf("  get <filename> - Download a file from the server\n");
-            printf("  upload <filename> - Upload a file to the server\n");
-            printf("  list - List files on the server\n");
-            printf("  pwd - Print current working directory on the server\n");
-            printf("  cd <directory> - Change directory on the server\n");
-            printf("  del <filename> - Delete a file on the server\n");
-            printf("  exit - Exit the client\n");
+            printf(YELLOW "Available commands:\n" RESET);
+            printf(CYAN "  get <filename> - Download a file from the server\n" RESET);
+            printf(CYAN "  send <filename> - Upload a file to the server\n" RESET);
+            printf(CYAN "  list - List files on the server\n" RESET);
+            printf(CYAN "  pwd - Print current working directory on the server\n" RESET);
+            printf(CYAN "  cd <directory> - Change directory on the server\n" RESET);
+            printf(CYAN "  del <filename> - Delete a file on the server\n" RESET);
+            printf(CYAN "  help - Show this help message\n" RESET);
+            printf(CYAN "  clear - Clear the console\n" RESET);
+            printf(CYAN "  exit - Exit the client\n" RESET);
+        }
+        // Clear
+        else if (strcmp(command, "clear") == 0)
+        {
+            // Clear the console
+            printf("\033[H\033[J");
         }
         // Exit
         else if (strcmp(command, "exit") == 0)
         {
             break;
         }
+        else if (strcmp(command, "") == 0)
+        {
+            // Do nothing, just prompt again
+            continue;
+        }
         else
         {
-            send(sock, command, strlen(command), 0);
-            send(sock, "\n", 1, 0);
-            receive_output(sock);
+            //  send(sock, command, strlen(command), 0);
+            // send(sock, "\n", 1, 0);
+            // receive_output(sock);
+            printf("Unknown command: %s. Use 'help' for a list of commands.\n", command);
         }
     }
 
