@@ -236,6 +236,33 @@ void change_dir(int sock, const char *path)
         send(sock, "ERROR: Cannot change directory\n", 31, 0);
     }
 }
+void delete_file(int sock, const char *filename)
+{
+    if (unlink(filename) == 0)
+    {
+        printf(GREEN "Deleted file: %s\n" RESET, filename);
+        send(sock, "SUCCESS: File deleted\n", 23, 0);
+    }
+    else
+    {
+        printf(RED "Error: Cannot delete file '%s'\n" RESET, filename);
+        send(sock, "ERROR: Cannot delete file\n", 26, 0);
+    }
+}
+
+void rename_file(int sock, const char *old_name, const char *new_name)
+{
+    if (rename(old_name, new_name) == 0)
+    {
+        printf(GREEN "Renamed file: %s -> %s\n" RESET, old_name, new_name);
+        send(sock, "SUCCESS: File renamed\n", 23, 0);
+    }
+    else
+    {
+        printf(RED "Error: Cannot rename file '%s' to '%s'\n" RESET, old_name, new_name);
+        send(sock, "ERROR: Cannot rename file\n", 26, 0);
+    }
+}
 
 void handle_client(int sock)
 {
@@ -274,6 +301,23 @@ void handle_client(int sock)
         else if (strncmp(command, "cd ", 3) == 0)
         {
             change_dir(sock, command + 3);
+        }
+        else if (strncmp(command, "delete ", 7) == 0)
+        {
+            delete_file(sock, command + 7);
+        }
+        else if (strncmp(command, "rename ", 7) == 0)
+        {
+            char *old_name = strtok(command + 7, " ");
+            char *new_name = strtok(NULL, " ");
+            if (old_name && new_name)
+            {
+                rename_file(sock, old_name, new_name);
+            }
+            else
+            {
+                send(sock, "ERROR: Invalid rename command\n", 30, 0);
+            }
         }
         else
         {

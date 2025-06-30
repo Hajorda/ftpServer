@@ -102,12 +102,12 @@ int main()
             continue;
         }
         // Delete file
-        else if (strncmp(command, "del ", 4) == 0)
+        else if (strncmp(command, "delete ", 7) == 0)
         {
-            const char *filename = command + 4; // Extract filename
+            const char *filename = command + 7; // Extract filename
             if (strlen(filename) == 0)
             {
-                printf(RED "Error: 'del' command requires a filename.\n" RESET);
+                printf(RED "Error: 'delete' command requires a filename.\n" RESET);
                 continue;
             }
             printf(GREEN "Deleting file: %s\n" RESET, filename);
@@ -115,9 +115,9 @@ int main()
             send(sock, "\n", 1, 0);
             receive_output(sock);
         }
-        else if (strcmp(command, "del") == 0)
+        else if (strcmp(command, "delete") == 0)
         {
-            printf(RED "Error: 'del' command requires a filename.\n" RESET);
+            printf(RED "Error: 'delete' command requires a filename.\n" RESET);
             continue;
         }
         // help
@@ -129,7 +129,7 @@ int main()
             printf(CYAN "  list - List files on the server\n" RESET);
             printf(CYAN "  pwd - Print current working directory on the server\n" RESET);
             printf(CYAN "  cd <directory> - Change directory on the server\n" RESET);
-            printf(CYAN "  del <filename> - Delete a file on the server\n" RESET);
+            printf(CYAN "  delete <filename> - Delete a file on the server\n" RESET);
             printf(CYAN "  help - Show this help message\n" RESET);
             printf(CYAN "  clear - Clear the console\n" RESET);
             printf(CYAN "  exit - Exit the client\n" RESET);
