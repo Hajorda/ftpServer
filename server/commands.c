@@ -162,8 +162,36 @@ void send_list(int sock)
     char buffer[512] = {0};
     while ((dir = readdir(d)) != NULL)
     {
-        snprintf(buffer, sizeof(buffer), "%s\n", dir->d_name);
+        // Skip the current and parent directory entries
+        if (strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0)
+            continue;
+
+        struct stat st;
+        if (stat(dir->d_name, &st) == 0)
+        {
+            if (S_ISDIR(st.st_mode))
+            {
+                snprintf(buffer, sizeof(buffer), "%s 📁 (Directory)\n", dir->d_name);
+            }
+            else if (S_ISREG(st.st_mode))
+            {
+                snprintf(buffer, sizeof(buffer), "%s 📄 (File)\n", dir->d_name);
+            }
+            else
+            {
+                snprintf(buffer, sizeof(buffer), "%s (Other)\n", dir->d_name);
+            }
+        }
+        else
+        {
+            snprintf(buffer, sizeof(buffer), "%s (Error getting type)\n", dir->d_name);
+        }
+
         send(sock, buffer, strlen(buffer), 0);
+        printf(CYAN "Sent: %s" RESET, buffer);
+
+        // Clear buffer for next entry
+        memset(buffer, 0, sizeof(buffer));
     }
     closedir(d);
     send(sock, "END_OF_LIST\n", 12, 0);
