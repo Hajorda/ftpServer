@@ -70,10 +70,13 @@ void receive_file(int sock)
         {
             strncpy(filename, header.filename, FILENAME_MAX_LEN - 1);
             filename[FILENAME_MAX_LEN - 1] = '\0'; // Ensure null-termination
-            fp = fopen(filename, "wb");
+            // save on 'saved' directory
+            char full_path[256];
+            snprintf(full_path, sizeof(full_path), "saved/%s", filename);
+            fp = fopen(full_path, "wb");
             if (!fp)
             {
-                printf(RED "Error: Cannot create file '%s'\n" RESET, filename);
+                printf(RED "Error: Cannot create file '%s'\n" RESET, full_path);
                 send(sock, "ERROR: Cannot create file\n", 26, 0);
                 perror("fopen");
                 return;

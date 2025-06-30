@@ -16,6 +16,10 @@ void send_error_to_client(int client_sock, const char *error_msg)
         snprintf(full_msg, sizeof(full_msg), "SERVER_ERROR: %s\n", error_msg);
         send(client_sock, full_msg, strlen(full_msg), 0);
     }
+    else
+    {
+        printf(RED "Error: While sending error, Invalid client socket\n" RESET);
+    }
 }
 
 void start_server(int port)
@@ -28,6 +32,7 @@ void start_server(int port)
         exit(1);
     }
 
+    //! TODO LOOK
     // Set socket option to reuse address
     int opt = 1;
     if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
@@ -68,7 +73,7 @@ void start_server(int port)
         if (client_sock < 0)
         {
             printf(RED "Server socket accept failed\n" RESET);
-            perror("accept");
+            perror("Error accepting client");
             continue; // Continue accepting other clients instead of exiting
         }
 
@@ -76,7 +81,7 @@ void start_server(int port)
         inet_ntop(AF_INET, &client_addr.sin_addr, client_ip, INET_ADDRSTRLEN);
         printf(BLUE "Client connected from IP: %s\n" RESET, client_ip);
 
-        // Handle client in a separate process or thread (for now, handle sequentially)
+        //! Handle client in a separate process or thread!!! for now handle sequentially
         handle_client(client_sock);
 
         printf(YELLOW "Client %s disconnected\n" RESET, client_ip);

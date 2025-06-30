@@ -239,7 +239,8 @@ void receive_output(int sockfd)
 
     while ((n = recv(sockfd, buffer, sizeof(buffer) - 1, 0)) > 0)
     {
-        buffer[n] = '\0';
+
+                buffer[n] = '\0';
         printf("%s", buffer);
 
         // Check for specific termination markers
@@ -248,6 +249,7 @@ void receive_output(int sockfd)
             strstr(buffer, "SUCCESS:") ||
             strstr(buffer, "OK:"))
         {
+            printf("inside in buffer loop\n");
             break;
         }
 

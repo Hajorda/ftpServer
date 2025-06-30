@@ -155,7 +155,7 @@ int main()
             //  send(sock, command, strlen(command), 0);
             // send(sock, "\n", 1, 0);
             // receive_output(sock);
-            printf("Unknown command: %s. Use 'help' for a list of commands.\n", command);
+            printf("Unknown command: \"%s\". Use 'help' for a list of commands.\n", command);
         }
     }
 
