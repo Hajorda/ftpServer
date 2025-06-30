@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "colors.h"
 
 #define CHUNK_SIZE 512
 #define FILENAME_MAX_LEN 64
@@ -103,7 +104,7 @@ void send_file(const char *filename, int sockfd)
         }
         if (!sendChunk(sockfd, &header, buffer, bytes_read))
         {
-            fprintf(stderr, "Failed to send chunk %d . ABORT", i);
+            fprintf(stderr, RED "Failed to send chunk %d . ABORT" RESET, i);
             fclose(fp);
             return;
         }
@@ -112,7 +113,7 @@ void send_file(const char *filename, int sockfd)
     }
     printf("\n");
 
-    printf("File succesfully sent.");
+    printf(GREEN "File successfully sent." RESET);
 }
 
 // Function to check if the server sent an error message
@@ -227,7 +228,7 @@ void receive_file(int sockfd)
     }
     else
     {
-        printf("Failed to receive file.\n");
+        printf(RED "Failed to receive file.\n" RESET);
     }
 }
 
@@ -235,21 +236,25 @@ void receive_output(int sockfd)
 {
     char buffer[512];
     int n;
-    printf("\n--- Server Response ---\n");
+    printf(GREEN " \n--- Server Response ---\n" RESET);
 
     while ((n = recv(sockfd, buffer, sizeof(buffer) - 1, 0)) > 0)
     {
 
         buffer[n] = '\0';
-        printf("%s", buffer);
 
         // Check for specific termination markers
-        if (strstr(buffer, "END_OF_LIST") ||
+        if (strstr(buffer, "END_OF_LIST"))
+        {
+            // printf("inside in buffer loop\n");
+            break;
+        }
+        printf("%s", buffer);
+        if (
             strstr(buffer, "ERROR:") ||
             strstr(buffer, "SUCCESS:") ||
             strstr(buffer, "OK:"))
         {
-            printf("inside in buffer loop\n");
             break;
         }
 
@@ -259,5 +264,5 @@ void receive_output(int sockfd)
             break;
         }
     }
-    printf("\n-----------------------\n");
+    printf(GREEN "-----------------------\n" RESET);
 }

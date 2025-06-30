@@ -167,15 +167,25 @@ void send_list(int sock)
             continue;
 
         struct stat st;
+        // Get file type and name
+        if (strlen(dir->d_name) >= FILENAME_MAX_LEN)
+        {
+            printf(RED "Error: Filename '%s' is too long\n" RESET, dir->d_name);
+            snprintf(buffer, sizeof(buffer), "%s (Error: Filename too long)\n", dir->d_name);
+            send(sock, buffer, strlen(buffer), 0);
+            continue;
+        }
+
+        // TODO LOOK ??
         if (stat(dir->d_name, &st) == 0)
         {
             if (S_ISDIR(st.st_mode))
             {
-                snprintf(buffer, sizeof(buffer), "%s 📁 (Directory)\n", dir->d_name);
+                snprintf(buffer, sizeof(buffer), "- 📁 %s (Directory)\n", dir->d_name);
             }
             else if (S_ISREG(st.st_mode))
             {
-                snprintf(buffer, sizeof(buffer), "%s 📄 (File)\n", dir->d_name);
+                snprintf(buffer, sizeof(buffer), "- 📄 %s (File)\n", dir->d_name);
             }
             else
             {
