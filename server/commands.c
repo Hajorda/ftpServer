@@ -1,5 +1,6 @@
 #include "commands.h"
 #include "colors.h"
+#include "server.h" // Ensure the log_message function is accessible
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -267,7 +268,7 @@ void rename_file(int sock, const char *old_name, const char *new_name)
 void handle_client(int sock)
 {
     char command[128];
-    printf(GREEN "Client handler started\n" RESET);
+    log_message("INFO", "Client handler started");
 
     while (1)
     {
@@ -276,38 +277,46 @@ void handle_client(int sock)
 
         if (bytes_read <= 0)
         {
-            printf(YELLOW "Client disconnected or read error\n" RESET);
+            log_message("WARNING", "Client disconnected or read error");
             break;
         }
 
+        log_message("INFO", "Received command");
         printf(CYAN "Received command: '%s'\n" RESET, command);
 
         if (strncmp(command, "upload", 6) == 0)
         {
+            log_message("INFO", "Handling upload command");
             receive_file(sock);
         }
         else if (strncmp(command, "get ", 4) == 0)
         {
+            log_message("INFO", "Handling get command");
             send_file(sock, command + 4);
         }
         else if (strcmp(command, "ls") == 0)
         {
+            log_message("INFO", "Handling ls command");
             send_list(sock);
         }
         else if (strcmp(command, "pwd") == 0)
         {
+            log_message("INFO", "Handling pwd command");
             send_pwd(sock);
         }
         else if (strncmp(command, "cd ", 3) == 0)
         {
+            log_message("INFO", "Handling cd command");
             change_dir(sock, command + 3);
         }
         else if (strncmp(command, "delete ", 7) == 0)
         {
+            log_message("INFO", "Handling delete command");
             delete_file(sock, command + 7);
         }
         else if (strncmp(command, "rename ", 7) == 0)
         {
+            log_message("INFO", "Handling rename command");
             char *old_name = strtok(command + 7, " ");
             char *new_name = strtok(NULL, " ");
             if (old_name && new_name)
@@ -316,15 +325,18 @@ void handle_client(int sock)
             }
             else
             {
+                log_message("ERROR", "Invalid rename command");
                 send(sock, "ERROR: Invalid rename command\n", 30, 0);
             }
         }
         else
         {
+            log_message("WARNING", "Unknown command received");
             printf(YELLOW "Unknown command: '%s'\n" RESET, command);
             send(sock, "ERROR: Unknown command\n", 23, 0);
         }
     }
 
+    log_message("INFO", "Client handler finished");
     printf(YELLOW "Client handler finished\n" RESET);
 }

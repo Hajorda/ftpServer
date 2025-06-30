@@ -1,0 +1,24 @@
+[30-06-2025 14:57:05] INFO: Server is starting
+[30-06-2025 14:57:05] INFO: Server is listening for connections
+[30-06-2025 14:57:10] INFO: Client connected 
+[30-06-2025 14:57:10] INFO: Client handler started
+[30-06-2025 14:57:15] INFO: Received command
+[30-06-2025 14:57:15] INFO: Handling ls command
+[30-06-2025 14:57:16] INFO: Received command
+[30-06-2025 14:57:16] INFO: Handling pwd command
+[30-06-2025 14:57:20] INFO: Received command
+[30-06-2025 14:57:20] INFO: Handling cd command
+[30-06-2025 15:02:00] INFO: Server is starting
+[30-06-2025 15:02:00] INFO: Server is listening for connections
+[30-06-2025 15:02:04] INFO: Client connected 
+[30-06-2025 15:02:04] INFO: Client handler started
+[30-06-2025 15:02:07] INFO: Received command
+[30-06-2025 15:02:07] INFO: Handling ls command
+[30-06-2025 15:02:11] INFO: Received command
+[30-06-2025 15:02:11] INFO: Handling pwd command
+[30-06-2025 15:02:15] INFO: Received command
+[30-06-2025 15:02:15] INFO: Handling pwd command
+[30-06-2025 15:02:21] INFO: Received command
+[30-06-2025 15:02:21] INFO: Handling get command
+[30-06-2025 15:02:24] WARNING: Client disconnected or read error
+[30-06-2025 15:02:24] INFO: Client handler finished

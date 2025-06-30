@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "stdlib.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "stat.h": "c",
+        "server.h": "c"
     }
 }
