@@ -24,6 +24,8 @@ void send_error_to_client(int client_sock, const char *error_msg)
     }
 }
 
+
+
 void log_message(const char *level, const char *message)
 {
     // Ensure the logs directory exists
