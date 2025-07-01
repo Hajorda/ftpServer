@@ -22,3 +22,9 @@
 [30-06-2025 15:02:21] INFO: Handling get command
 [30-06-2025 15:02:24] WARNING: Client disconnected or read error
 [30-06-2025 15:02:24] INFO: Client handler finished
+[01-07-2025 13:54:05] INFO: Server is starting
+[01-07-2025 13:54:05] INFO: Server is listening for connections
+[01-07-2025 13:58:20] INFO: Server is starting
+[01-07-2025 13:58:20] INFO: Server is listening for connections
+[01-07-2025 13:59:40] INFO: Server is starting
+[01-07-2025 13:59:40] INFO: Server is listening for connections

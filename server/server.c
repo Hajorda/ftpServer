@@ -29,8 +29,8 @@ void send_error_to_client(int client_sock, const char *error_msg)
 void log_message(const char *level, const char *message)
 {
     // Ensure the logs directory exists
-    const char *log_file_path = "/home/hajorda/Developer/original/server/logs/server_logs.txt";
-    mkdir("/home/hajorda/Developer/original/server/logs", 0755);
+    const char *log_file_path = "logs/server_logs.txt";
+    mkdir("logs", 0755);
     // Open the log file in append mode
     FILE *log_file = fopen(log_file_path, "a");
     if (!log_file)

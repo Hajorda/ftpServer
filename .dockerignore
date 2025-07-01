@@ -1,0 +1,7 @@
+.git
+.vscode
+*.o
+*.out
+
+# Ignore the epoll_tutorial directory as it's not needed for the server
+epoll_tutorial/
